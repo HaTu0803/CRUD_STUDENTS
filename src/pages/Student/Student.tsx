@@ -3,19 +3,24 @@ import CustomTable from '../../components/Table/Table'; // Importing CustomTable
 // import { useGetStudents } from '../../services/students/services';
 import { getAllStudents } from '../../services/students/callers';
 
-const Student: React.FC = () => {
-  const [students, setStudents] = useState<TStudentsList[] | undefined>(undefined);
-  const [loading, setLoading] = useState<boolean>(true); 
 
+
+
+const Student: React.FC = () => {
+  const [data, setData] = useState<TStudentsList[] | undefined>();
+  const [loading, setLoading] = useState<boolean>(true); 
+  
   useEffect(() => {
     fetchStudents();
   }, []);
   const fetchStudents = async () => {
+    setLoading(true);
+
     try {
-      setLoading(true);
-      const response = await getAllStudents(); // Adjust the parameters if necessary
-      setStudents(response.data);
-      console.log(response);
+      const response = await getAllStudents(); 
+      setData(response.data);
+  
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching students:', error);
     } finally {
@@ -23,20 +28,14 @@ const Student: React.FC = () => {
     }
   }
 
-  
-
 
   return (
     <div>
       <h1>Student List</h1>
       <CustomTable
-        data={students}
+        data={data}
         loading={loading}
 
-        tableParams={{ pagination: { current: 1, pageSize: 10, total: students?.length || 0 } }} 
-        handleTableChange={(pagination, filters, sorter) => {
-          console.log(pagination, filters, sorter);
-        }}
       />
     </div>
   );

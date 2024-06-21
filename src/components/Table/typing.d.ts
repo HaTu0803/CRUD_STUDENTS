@@ -8,6 +8,6 @@ export type TableParams = {
   pagination?: TablePaginationConfig;
   sortField?: string;
   sortOrder?: string;
-  filters?: Parameters<GetProp<TableProps, 'onChange'>>[1];
+  filters?: Parameters<NonNullable<TablePaginationConfig['onChange']>>[1];
 }
 

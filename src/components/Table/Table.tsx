@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Table as AntTable, Modal, Tag } from "antd";
-import type { TableProps as AntTableProps } from "antd";
+import type { TableProps  } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import CustomPopconfirm from "../PopConfirm";
@@ -9,55 +9,39 @@ import { useDeleteStudent } from '../../services/students/services';
 interface CustomTableProps {
   data: TStudentsList[] | undefined;
   loading: boolean;
-  tableParams: { pagination: AntTableProps<TStudentsList>["pagination"] };
-  handleTableChange: AntTableProps<TStudentsList>["onChange"];
+ 
 }
 
-const CustomTable: React.FC<CustomTableProps> = ({
-  data,
-  loading,
-  tableParams,
-  handleTableChange,
-}) => {
+
+const CustomTable: React.FC<CustomTableProps> = ({ data, loading }) => {
+  const [studentData, setStudentData] = useState<TStudentsList[] | undefined>(data);
   const [deleting, setDeleting] = useState<boolean>(false);
+
+  useEffect(() => {
+    setStudentData(data);
+  }, [data]);
 
   const onEdit = (record: TStudentsList) => {
     console.log(record);
   };
 
-  const onDelete = async (record: TStudentsList) => {
+  const OnDelete = async (record: TStudentsList) => {
     setDeleting(true);
     try {
-      // Simulate deletion (replace with actual API call)
-      console.log(`Deleting student with ID: ${record.id}`);
-      setTimeout(() => {
-        console.log(`Student ${record.name} deleted successfully`);
-        Modal.success({
-          content: `Deleted Student ${record.name} successfully`,
-        });
-        setDeleting(false);
-        // You should update your data source here if needed
-      }, 1000);
+      const response = await useDeleteStudent(record.id);
+      console.log(response);
+      Modal.success({
+        title: "Success",
+        content: `Student ${record.name} deleted successfully!`,
+      });
+      setStudentData((prevData) => prevData?.filter((student) => student.id !== record.id));
+      setDeleting(false);
     } catch (error) {
       console.error("Error deleting student:", error);
-      Modal.error({
-        title: "Error",
-        content: `Failed to delete student ${record.name}. Please try again.`,
-      });
       setDeleting(false);
     }
   };
-
-  const handleChange: AntTableProps<TStudentsList>["onChange"] = (
-    pagination,
-    filters,
-    sorter,
-    extra
-  ) => {
-    if (handleTableChange) {
-      handleTableChange(pagination, filters, sorter, extra);
-    }
-  };
+  
 
   const columns: ColumnsType<TStudentsList> = [
     {
@@ -113,7 +97,7 @@ const CustomTable: React.FC<CustomTableProps> = ({
           />
           <CustomPopconfirm
             title="Are you sure you want to delete this record?"
-            onConfirm={() => onDelete(record)}
+            onConfirm={() => OnDelete(record)}
             onCancel={() => {}}
             okText="Yes"
             cancelText="No"
@@ -137,10 +121,10 @@ const CustomTable: React.FC<CustomTableProps> = ({
     <AntTable
       columns={columns}
       rowKey={(record) => record.id.toString()}
-      dataSource={data}
-      pagination={tableParams.pagination}
-      loading={loading}
-      onChange={handleChange}
+      dataSource={studentData}
+      loading={loading || deleting}
+      
+      
       bordered
       scroll={{ y: 240 }}
     />
