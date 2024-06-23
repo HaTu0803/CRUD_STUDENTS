@@ -10,12 +10,15 @@ interface FormRegisterProps {
   student?: TStudentsList;
   isEdit?: boolean;
   onSuccess: (newStudent: TStudentsList) => void;
-
 }
 
-const FormRegister: React.FC<FormRegisterProps> = ({ student, isEdit, onSuccess }) => {
+const FormRegister: React.FC<FormRegisterProps> = ({
+  student,
+  isEdit,
+  onSuccess,
+}) => {
   const { addStudent, updateStudent, students } = useStudent();
-  const [ loading, setLoading ] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -25,21 +28,17 @@ const FormRegister: React.FC<FormRegisterProps> = ({ student, isEdit, onSuccess 
   }, [isEdit, student, form]);
 
   const HandleSubmit = async (values: TStudentsList) => {
-    
     try {
-      // setLoading(true);
       if (isEdit && student) {
         const response = await updateStudentService(student.id, values);
         if (response.data) {
           const index = students.findIndex((s) => s.Id === student.id);
           updateStudent({ ...values, Id: student.id }, index);
-         
-   
         }
-         Modal.success({
-            title: "Success",
-            content: `Student ${values.name} updated successfully!`,
-          });
+        Modal.success({
+          title: "Success",
+          content: `Student ${values.name} updated successfully!`,
+        });
       } else {
         const response = await createStudent({ ...values, status: "Active" });
         if (response.data) {
@@ -48,12 +47,11 @@ const FormRegister: React.FC<FormRegisterProps> = ({ student, isEdit, onSuccess 
             Id: response.data.id,
             status: "Active",
           });
-         
         }
-         Modal.success({
-            title: "Success",
-            content: `Student ${values.name} added successfully!`,
-          });
+        Modal.success({
+          title: "Success",
+          content: `Student ${values.name} added successfully!`,
+        });
       }
       form.resetFields();
       if (onSuccess) {

@@ -1,25 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Table as AntTable, Modal, Tag } from "antd";
-import type { TableProps  } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import CustomPopconfirm from "../PopConfirm";
 import CustomModal from "../Modal";
-import { useDeleteStudent, useUpdateStudent } from '../../services/students/services';
-import { FormRegister } from '../../components/Form/Form';
+import { useDeleteStudent } from "../../services/students/services";
+import { FormRegister } from "../../components/Form/Form";
 import { getAllStudents } from "../../services/students/callers";
 interface CustomTableProps {
   data: TStudentsList[] | undefined;
   loading: boolean;
- 
 }
 
-
 const CustomTable: React.FC<CustomTableProps> = ({ data, loading }) => {
-  const [studentData, setStudentData] = useState<TStudentsList[] | undefined>(data);
+  const [studentData, setStudentData] = useState<TStudentsList[] | undefined>(
+    data
+  );
   const [deleting, setDeleting] = useState<boolean>(false);
   const [editing, setEditing] = useState<boolean>(false);
-  const [editingRecord, setEditingRecord] = useState<TStudentsList | null>(null);
+  const [editingRecord, setEditingRecord] = useState<TStudentsList | null>(
+    null
+  );
 
   const showEditModal = (record: TStudentsList) => {
     setEditingRecord(record);
@@ -33,29 +34,22 @@ const CustomTable: React.FC<CustomTableProps> = ({ data, loading }) => {
     setStudentData(data);
   }, [data]);
 
-  // useEffect(() => {
-  //   if (!studentData) {
-  //     fetchStudents();
-  //   }
-  // }, []);
-
-  // const fetchStudents = async () => {
-  //   setEditing(true);
-  //   try {
-  //     const response = await getAllStudents();
-  //     setStudentData(response.data);
-  //   } catch (error) {
-  //     console.error('Error fetching students:', error);
-  //   } finally {
-  //     setEditing(false);
-  //   }
-  // };
+  const fetchStudents = async () => {
+    setEditing(true);
+    try {
+      const response = await getAllStudents();
+      setStudentData(response.data);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+    } finally {
+      setEditing(false);
+    }
+  };
 
   const handleFormSuccess = () => {
     closeEditModal();
-    // fetchStudents();
-   
-  }
+    fetchStudents();
+  };
   const handleCancel = () => {
     closeEditModal();
   };
@@ -69,15 +63,15 @@ const CustomTable: React.FC<CustomTableProps> = ({ data, loading }) => {
         title: "Success",
         content: `Student ${record.name} deleted successfully!`,
       });
-      setStudentData((prevData) => prevData?.filter((student) => student.id !== record.id));
+      setStudentData((prevData) =>
+        prevData?.filter((student) => student.id !== record.id)
+      );
       setDeleting(false);
     } catch (error) {
       console.error("Error deleting student:", error);
       setDeleting(false);
     }
   };
-  
-    
 
   const columns: ColumnsType<TStudentsList> = [
     {
@@ -120,28 +114,30 @@ const CustomTable: React.FC<CustomTableProps> = ({ data, loading }) => {
       fixed: "right",
       render: (_, record) => (
         <>
-         
-            <EditOutlined
-              style={{
-                cursor: "pointer",
-                border: "1px solid #f0f0f0",
-                padding: "6px",
-                borderRadius: "6px",
-                backgroundColor: "#E6F7FF",
-                marginRight: "8px",
-              }}
-              onClick={() => showEditModal(record)}
+          <EditOutlined
+            style={{
+              cursor: "pointer",
+              border: "1px solid #f0f0f0",
+              padding: "6px",
+              borderRadius: "6px",
+              backgroundColor: "#E6F7FF",
+              marginRight: "8px",
+            }}
+            onClick={() => showEditModal(record)}
+          />
+          <CustomModal
+            title="Edit Student"
+            visible={editingRecord === record}
+            onCancel={handleCancel}
+            footer={null}
+          >
+            <FormRegister
+              student={record}
+              isEdit={true}
+              onSuccess={handleFormSuccess}
             />
-            <CustomModal
-              title="Edit Student"
-              visible={editingRecord === record}
-              onCancel={handleCancel}
-              footer={null}
-            >
-              <FormRegister student={record} isEdit={true} onSuccess={handleFormSuccess} />
-            </CustomModal>
+          </CustomModal>
 
-  
           <CustomPopconfirm
             title="Are you sure you want to delete this record?"
             onConfirm={() => OnDelete(record)}
