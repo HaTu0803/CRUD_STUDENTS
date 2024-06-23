@@ -1,12 +1,12 @@
-import router from './config/router';
-import {
-  RouterProvider,
-} from "react-router-dom";
-function App() {
-  
+import router from "./config/router";
+import { RouterProvider } from "react-router-dom";
+import { StudentProvider } from "./contexts/StudentContext";
 
+function App() {
   return (
-    <RouterProvider router={router} />
+    <StudentProvider>
+      <RouterProvider router={router} />
+    </StudentProvider>
   );
 }
 

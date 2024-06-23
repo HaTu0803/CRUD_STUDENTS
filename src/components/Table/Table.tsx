@@ -4,8 +4,10 @@ import type { TableProps  } from "antd";
 import { ColumnsType } from "antd/es/table";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import CustomPopconfirm from "../PopConfirm";
-import { useDeleteStudent } from '../../services/students/services';
-
+import CustomModal from "../Modal";
+import { useDeleteStudent, useUpdateStudent } from '../../services/students/services';
+import { FormRegister } from '../../components/Form/Form';
+import { getAllStudents } from "../../services/students/callers";
 interface CustomTableProps {
   data: TStudentsList[] | undefined;
   loading: boolean;
@@ -16,13 +18,46 @@ interface CustomTableProps {
 const CustomTable: React.FC<CustomTableProps> = ({ data, loading }) => {
   const [studentData, setStudentData] = useState<TStudentsList[] | undefined>(data);
   const [deleting, setDeleting] = useState<boolean>(false);
+  const [editing, setEditing] = useState<boolean>(false);
+  const [editingRecord, setEditingRecord] = useState<TStudentsList | null>(null);
+
+  const showEditModal = (record: TStudentsList) => {
+    setEditingRecord(record);
+  };
+
+  const closeEditModal = () => {
+    setEditingRecord(null);
+  };
 
   useEffect(() => {
     setStudentData(data);
   }, [data]);
 
-  const onEdit = (record: TStudentsList) => {
-    console.log(record);
+  // useEffect(() => {
+  //   if (!studentData) {
+  //     fetchStudents();
+  //   }
+  // }, []);
+
+  // const fetchStudents = async () => {
+  //   setEditing(true);
+  //   try {
+  //     const response = await getAllStudents();
+  //     setStudentData(response.data);
+  //   } catch (error) {
+  //     console.error('Error fetching students:', error);
+  //   } finally {
+  //     setEditing(false);
+  //   }
+  // };
+
+  const handleFormSuccess = () => {
+    closeEditModal();
+    // fetchStudents();
+   
+  }
+  const handleCancel = () => {
+    closeEditModal();
   };
 
   const OnDelete = async (record: TStudentsList) => {
@@ -42,6 +77,7 @@ const CustomTable: React.FC<CustomTableProps> = ({ data, loading }) => {
     }
   };
   
+    
 
   const columns: ColumnsType<TStudentsList> = [
     {
@@ -67,7 +103,7 @@ const CustomTable: React.FC<CustomTableProps> = ({ data, loading }) => {
       width: "20%",
       filters: [
         { text: "Active", value: "Active" },
-        { text: "Disabled", value: "Disabled" },
+        { text: "Inactive", value: "Inactive" },
       ],
       onFilter: (value, record) => record.status === value,
       render: (_, record) => (
@@ -84,17 +120,28 @@ const CustomTable: React.FC<CustomTableProps> = ({ data, loading }) => {
       fixed: "right",
       render: (_, record) => (
         <>
-          <EditOutlined
-            onClick={() => onEdit(record)}
-            style={{
-              cursor: "pointer",
-              marginRight: 12,
-              border: "1px solid #f0f0f0",
-              padding: "6px",
-              borderRadius: "6px",
-              backgroundColor: "#E8EFCF",
-            }}
-          />
+         
+            <EditOutlined
+              style={{
+                cursor: "pointer",
+                border: "1px solid #f0f0f0",
+                padding: "6px",
+                borderRadius: "6px",
+                backgroundColor: "#E6F7FF",
+                marginRight: "8px",
+              }}
+              onClick={() => showEditModal(record)}
+            />
+            <CustomModal
+              title="Edit Student"
+              visible={editingRecord === record}
+              onCancel={handleCancel}
+              footer={null}
+            >
+              <FormRegister student={record} isEdit={true} onSuccess={handleFormSuccess} />
+            </CustomModal>
+
+  
           <CustomPopconfirm
             title="Are you sure you want to delete this record?"
             onConfirm={() => OnDelete(record)}
@@ -122,10 +169,7 @@ const CustomTable: React.FC<CustomTableProps> = ({ data, loading }) => {
       columns={columns}
       rowKey={(record) => record.id.toString()}
       dataSource={studentData}
-      loading={loading || deleting}
-      
-      
-      bordered
+      loading={loading || deleting || editing}
       scroll={{ y: 240 }}
     />
   );
